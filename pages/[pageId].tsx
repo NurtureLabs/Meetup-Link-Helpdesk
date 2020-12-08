@@ -1,66 +1,64 @@
-import React from "react";
-import { NotionRenderer, BlockMapType } from "react-notion";
-import Head from "next/head";
-import Link from "next/link";
-import fetch from "node-fetch";
+import React from 'react'
+import Head from 'next/head'
 
-export async function getServerSideProps(context) {
-  const pageId = context.params?.pageId;
+import { getPageTitle, getAllPagesInSpace } from 'notion-utils'
+import { NotionAPI } from 'notion-client'
+import { NotionRenderer } from 'react-notion-x'
 
-  if (!pageId) {
-    return;
-  }
+const notion = new NotionAPI()
 
-  const data: BlockMapType = await fetch(
-    `https://notion-api.splitbee.io/v1/page/${pageId}`
-  ).then(res => res.json());
+export const getStaticProps = async (context) => {
+  const pageId = 'de32633efcbe448e964651a9ea50c3fa'
+  const recordMap = await notion.getPage(pageId)
 
   return {
     props: {
-      blockMap: data
-    }
-  };
+      recordMap
+    },
+    revalidate: 10
+  }
 }
 
-const NotionPage = ({ blockMap }) => {
-  if (!blockMap || Object.keys(blockMap).length === 0) {
-    return (
-      <div>
-        <h3>No data found.</h3>
-        <div> Make sure the pageId is valid.</div>
-        <div>Only public pages are supported in this example.</div>
-      </div>
-    );
+export async function getStaticPaths() {
+  const rootNotionPageId = 'de32633efcbe448e964651a9ea50c3fa'
+  const rootNotionSpaceId = '01ec9c00-d04b-4c88-b572-07db20e663c9'
+
+  // This crawls all public pages starting from the given root page in order
+  // for next.js to pre-generate all pages via static site generation (SSG).
+  // This is a useful optimization but not necessary; you could just as easily
+  // set paths to an empty array to not pre-generate any pages at build time.
+  const pages = await getAllPagesInSpace(
+    rootNotionPageId,
+    rootNotionSpaceId,
+    notion.getPage.bind(notion)
+  )
+
+  const paths = Object.keys(pages).map((pageId) => `/${pageId}`)
+
+  return {
+    paths,
+    fallback: true
+  }
+}
+
+export default function NotionPage({ recordMap }) {
+  if (!recordMap) {
+    return null
   }
 
-  const title =
-    blockMap[Object.keys(blockMap)[0]]?.value.properties.title[0][0];
+  const title = getPageTitle(recordMap)
+  console.log(title, recordMap)
 
   return (
     <>
       <Head>
+        <meta name='description' content='React Notion X demo renderer.' />
         <title>{title}</title>
       </Head>
-      <NotionRenderer
-        blockMap={blockMap}
-        fullPage
-        customBlockComponents={{
-          page: ({ blockValue, renderComponent }) => (
-            <Link href={`/${blockValue.id}`}>{renderComponent()}</Link>
-          )
-        }}
-      />
-      <style jsx global>{`
-        div :global(.notion-code) {
-          box-sizing: border-box;
-        }
-        body {
-          padding: 0;
-          margin: 0;
-        }
-      `}</style>
+
+      <NotionRenderer recordMap={recordMap} fullPage={true} darkMode={false} />
     </>
-  );
-};
+  )
+}
 
 export default NotionPage;
