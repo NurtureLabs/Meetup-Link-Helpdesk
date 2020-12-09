@@ -24,29 +24,29 @@ export const getStaticProps = async (context) => {
   }
 }
 
-export async function getStaticPaths() {
-  const rootNotionPageId = 'de32633efcbe448e964651a9ea50c3fa'
-  const rootNotionSpaceId = '01ec9c00-d04b-4c88-b572-07db20e663c9'
+// export async function getStaticPaths() {
+//   const rootNotionPageId = 'de32633efcbe448e964651a9ea50c3fa'
+//   const rootNotionSpaceId = '01ec9c00-d04b-4c88-b572-07db20e663c9'
 
-  // This crawls all public pages starting from the given root page in order
-  // for next.js to pre-generate all pages via static site generation (SSG).
-  // This is a useful optimization but not necessary; you could just as easily
-  // set paths to an empty array to not pre-generate any pages at build time.
-  const pages = await getAllPagesInSpace(
-    rootNotionPageId,
-    rootNotionSpaceId,
-    notion.getPage.bind(notion)
-  )
+//   // This crawls all public pages starting from the given root page in order
+//   // for next.js to pre-generate all pages via static site generation (SSG).
+//   // This is a useful optimization but not necessary; you could just as easily
+//   // set paths to an empty array to not pre-generate any pages at build time.
+//   const pages = await getAllPagesInSpace(
+//     rootNotionPageId,
+//     rootNotionSpaceId,
+//     notion.getPage.bind(notion)
+//   )
 
-  // const paths = Object.keys(pages).map((pageId) => `/${pageId}`)
-  const paths = Object.keys(pages).map((pageId) => `/`)
+//   const paths = Object.keys(pages).map((pageId) => `/${pageId}`)
+//   // const paths = Object.keys(pages).map((pageId) => `/`)
 
 
-  return {
-    paths,
-    fallback: true
-  }
-}
+//   return {
+//     paths,
+//     fallback: true
+//   }
+// }
 
 // const Home = ({ blockMap }) => (
 //     <NotionPage
